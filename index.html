@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Resume Builder</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        /* Toolbox Styles */
+        .toolbox {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section-item {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 4px;
+            cursor: move;
+            transition: all 0.2s ease;
+        }
+
+        .section-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        /* Resume Preview */
+        .resume-preview {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 1000px;
+        }
+
+        .resume-section {
+            margin: 1rem 0;
+            padding: 1rem;
+            border: 1px solid transparent;
+        }
+
+        .resume-section:hover {
+            border: 1px dashed #dee2e6;
+        }
+
+        .resume-section h2 {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Draggable Elements */
+        .dragging {
+            opacity: 0.5;
+        }
+
+        .drag-over {
+            border: 2px dashed #6c757d;
+            background: #f8f9fa;
+        }
+
+        /* Buttons */
+        .button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .button:hover {
+            background: #0056b3;
+        }
+
+        /* Editable Content */
+        [contenteditable="true"]:focus {
+            outline: 2px solid #007bff;
+            border-radius: 4px;
+            padding: 0.25rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="toolbox">
+            <h2>Resume Sections</h2>
+            <div class="section-item" draggable="true" data-section="header">
+                Header Section
+            </div>
+            <div class="section-item" draggable="true" data-section="experience">
+                Work Experience
+            </div>
+            <div class="section-item" draggable="true" data-section="education">
+                Education
+            </div>
+            <div class="section-item" draggable="true" data-section="skills">
+                Skills
+            </div>
+            <div class="section-item" draggable="true" data-section="projects">
+                Projects
+            </div>
+            <hr style="margin: 1rem 0;">
+            <button id="exportPDF" class="button">Export PDF</button>
+        </aside>
+
+        <main class="resume-preview" id="resumePreview">
+            <div class="resume-section" id="initial-prompt">
+                <p>Drag sections from the toolbox to begin building your resume</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const resumePreview = document.getElementById('resumePreview');
+            const sectionItems = document.querySelectorAll('.section-item');
+            const initialPrompt = document.getElementById('initial-prompt');
+
+            // Template functions for different sections
+            const sectionTemplates = {
+                header: () => `
+                    <div class="resume-section fade-in" data-section="header">
+                        <h1 contenteditable="true">Your Name</h1>
+                        <p contenteditable="true">Professional Title</p>
+                        <p contenteditable="true">Email • Phone • Location</p>
+                    </div>
+                `,
+                experience: () => `
+                    <div class="resume-section fade-in" data-section="experience">
+                        <h2 contenteditable="true">Work Experience</h2>
+                        <div class="experience-item">
+                            <h3 contenteditable="true">Company Name</h3>
+                            <p contenteditable="true">Position • Date Range</p>
+                            <ul>
+                                <li contenteditable="true">Key achievement or responsibility</li>
+                                <li contenteditable="true">Click to edit this bullet point</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                education: () => `
+                    <div class="resume-section fade-in" data-section="education">
+                        <h2 contenteditable="true">Education</h2>
+                        <h3 contenteditable="true">University Name</h3>
+                        <p contenteditable="true">Degree • Graduation Date</p>
+                        <p contenteditable="true">Relevant Coursework • GPA</p>
+                    </div>
+                `,
+                skills: () => `
+                    <div class="resume-section fade-in" data-section="skills">
+                        <h2 contenteditable="true">Skills</h2>
+                        <p contenteditable="true">Technical Skills: Skill 1, Skill 2, Skill 3</p>
+                        <p contenteditable="true">Soft Skills: Skill 1, Skill 2, Skill 3</p>
+                    </div>
+                `,
+                projects: () => `
+                    <div class="resume-section fade-in" data-section="projects">
+                        <h2 contenteditable="true">Projects</h2>
+                        <div class="project-item">
+                            <h3 contenteditable="true">Project Name</h3>
+                            <p contenteditable="true">Technologies Used</p>
+                            <ul>
+                                <li contenteditable="true">Key feature or achievement</li>
+                                <li contenteditable="true">Click to edit this bullet point</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            };
+
+            // Drag and Drop Implementation
+            sectionItems.forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    e.target.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', e.target.dataset.section);
+                });
+
+                item.addEventListener('dragend', (e) => {
+                    e.target.classList.remove('dragging');
+                });
+            });
+
+            resumePreview.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.target.classList.add('drag-over');
+            });
+
+            resumePreview.addEventListener('dragleave', (e) => {
+                e.target.classList.remove('drag-over');
+            });
+
+            resumePreview.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const sectionType = e.dataTransfer.getData('text/plain');
+                
+                if (initialPrompt) {
+                    initialPrompt.remove();
+                }
+
+                if (sectionTemplates[sectionType]) {
+                    const newSection = sectionTemplates[sectionType]();
+                    resumePreview.insertAdjacentHTML('beforeend', newSection);
+                }
+
+                document.querySelectorAll('.drag-over').forEach(element => {
+                    element.classList.remove('drag-over');
+                });
+            });
+
+            // PDF Export Implementation
+            document.getElementById('exportPDF').addEventListener('click', () => {
+                const element = document.getElementById('resumePreview');
+                const opt = {
+                    margin: 1,
+                    filename: 'resume.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+
+                // Temporarily remove draggable attributes for clean PDF
+                const draggableElements = element.querySelectorAll('[draggable]');
+                draggableElements.forEach(el => el.removeAttribute('draggable'));
+
+                html2pdf().set(opt).from(element).save().then(() => {
+                    // Restore draggable attributes
+                    draggableElements.forEach(el => el.setAttribute('draggable', 'true'));
+                });
+            });
+
+            // Make sections reorderable
+            let dragSrc = null;
+            resumePreview.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('resume-section')) {
+                    dragSrc = e.target;
+                    e.target.classList.add('dragging');
+                }
+            });
+
+            resumePreview.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (dragSrc) {
+                    const target = e.target.closest('.resume-section');
+                    if (target && target !== dragSrc) {
+                        const bbox = target.getBoundingClientRect();
+                        const afterElement = (e.clientY - bbox.top) > (bbox.height / 2);
+                        if (afterElement) {
+                            target.parentNode.insertBefore(dragSrc, target.nextSibling);
+                        } else {
+                            target.parentNode.insertBefore(dragSrc, target);
+                        }
+                    }
+                }
+            });
+
+            resumePreview.addEventListener('dragend', (e) => {
+                if (e.target.classList.contains('resume-section')) {
+                    e.target.classList.remove('dragging');
+                    dragSrc = null;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
