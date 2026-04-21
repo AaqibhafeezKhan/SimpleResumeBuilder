@@ -3,66 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Resume Builder</title>
-    <meta name="description" content="Create and export professional resumes dynamically">
+    <title>Resume Builder — Create Professional Resumes Online</title>
+    <meta name="description" content="Build stunning, ATS-friendly resumes with drag-and-drop ease. Multiple templates, live inline editing, and instant PDF export — all in your browser.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body data-color="default">
-    <div class="app-layout">
-        <aside class="sidebar" id="sidebar">
-            <div class="brand">
-                <h1>Builder.</h1>
-            </div>
-            
-            <div class="panel">
-                <h2 class="panel-title">Sections</h2>
-                <div class="draggable-sections">
-                    <div class="drag-item" draggable="true" data-type="header">Header</div>
-                    <div class="drag-item" draggable="true" data-type="summary">Summary</div>
-                    <div class="drag-item" draggable="true" data-type="experience">Experience</div>
-                    <div class="drag-item" draggable="true" data-type="education">Education</div>
-                    <div class="drag-item" draggable="true" data-type="skills">Skills</div>
-                    <div class="drag-item" draggable="true" data-type="projects">Projects</div>
+<body data-color="slate">
+    <div class="app-shell">
+
+        <header class="topbar">
+            <div class="topbar-brand">Resume<strong>Builder</strong></div>
+            <div class="topbar-center">
+                <div class="strength-wrap">
+                    <span class="strength-label">Resume Strength</span>
+                    <div class="strength-track">
+                        <div class="strength-bar" id="strength-bar"></div>
+                    </div>
+                    <span class="strength-pct" id="strength-pct">0%</span>
                 </div>
             </div>
-
-            <div class="panel">
-                <h2 class="panel-title">Appearance</h2>
-                <div class="theme-selector" id="color-themes">
-                    <button class="color-btn active" data-color="default"></button>
-                    <button class="color-btn" data-color="blue" style="background:#2563eb;"></button>
-                    <button class="color-btn" data-color="emerald" style="background:#059669;"></button>
-                    <button class="color-btn" data-color="purple" style="background:#7c3aed;"></button>
-                </div>
-                <select id="font-family" class="select-input mt-1">
-                    <option value="Inter">Inter</option>
-                    <option value="Outfit">Outfit</option>
-                    <option value="Lora">Lora</option>
-                    <option value="JetBrains Mono">JetBrains Mono</option>
-                </select>
+            <div class="topbar-end">
+                <span class="saved-pill" id="saved-pill">Saved</span>
+                <button class="tbtn tbtn-ghost" id="btn-clear">Clear All</button>
+                <button class="tbtn tbtn-primary" id="btn-pdf">Export PDF</button>
             </div>
+        </header>
 
-            <div class="panel mt-auto">
-                <div class="controls-group">
-                    <button id="btn-clear" class="btn btn-outline">Clear Document</button>
-                    <button id="btn-print" class="btn btn-primary">Save as PDF</button>
+        <div class="workspace">
+
+            <aside class="sidebar">
+                <div class="sidebar-inner">
+
+                    <div class="sb-group">
+                        <div class="sb-group-title">Templates</div>
+                        <div class="tmpl-grid">
+                            <button class="tmpl-card active" data-template="modern">
+                                <div class="tc-thumb tc-modern"></div>
+                                <span>Modern</span>
+                            </button>
+                            <button class="tmpl-card" data-template="classic">
+                                <div class="tc-thumb tc-classic"></div>
+                                <span>Classic</span>
+                            </button>
+                            <button class="tmpl-card" data-template="minimal">
+                                <div class="tc-thumb tc-minimal"></div>
+                                <span>Minimal</span>
+                            </button>
+                            <button class="tmpl-card" data-template="bold">
+                                <div class="tc-thumb tc-bold"></div>
+                                <span>Bold</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="sb-group">
+                        <div class="sb-group-title">Add Sections</div>
+                        <div class="section-palette" id="section-palette">
+                            <div class="palette-row" draggable="true" data-type="header">
+                                <span class="pr-badge">H</span>
+                                <div class="pr-info"><b>Header</b><small>Name, title &amp; contact</small></div>
+                            </div>
+                            <div class="palette-row" draggable="true" data-type="summary">
+                                <span class="pr-badge">S</span>
+                                <div class="pr-info"><b>Summary</b><small>Professional overview</small></div>
+                            </div>
+                            <div class="palette-row" draggable="true" data-type="experience">
+                                <span class="pr-badge">W</span>
+                                <div class="pr-info"><b>Experience</b><small>Work history &amp; roles</small></div>
+                            </div>
+                            <div class="palette-row" draggable="true" data-type="education">
+                                <span class="pr-badge">E</span>
+                                <div class="pr-info"><b>Education</b><small>Degrees &amp; institutions</small></div>
+                            </div>
+                            <div class="palette-row" draggable="true" data-type="skills">
+                                <span class="pr-badge">K</span>
+                                <div class="pr-info"><b>Skills</b><small>Technical &amp; soft skills</small></div>
+                            </div>
+                            <div class="palette-row" draggable="true" data-type="projects">
+                                <span class="pr-badge">P</span>
+                                <div class="pr-info"><b>Projects</b><small>Portfolio &amp; side work</small></div>
+                            </div>
+                            <div class="palette-row" draggable="true" data-type="certifications">
+                                <span class="pr-badge">C</span>
+                                <div class="pr-info"><b>Certifications</b><small>Awards &amp; certificates</small></div>
+                            </div>
+                            <div class="palette-row" draggable="true" data-type="languages">
+                                <span class="pr-badge">L</span>
+                                <div class="pr-info"><b>Languages</b><small>Language proficiency</small></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sb-group">
+                        <div class="sb-group-title">Accent Color</div>
+                        <div class="color-swatch-row">
+                            <button class="color-swatch active" data-color="slate"  style="background:#1e293b" title="Slate"></button>
+                            <button class="color-swatch"        data-color="blue"   style="background:#1d4ed8" title="Blue"></button>
+                            <button class="color-swatch"        data-color="teal"   style="background:#0f766e" title="Teal"></button>
+                            <button class="color-swatch"        data-color="rose"   style="background:#be123c" title="Rose"></button>
+                            <button class="color-swatch"        data-color="violet" style="background:#6d28d9" title="Violet"></button>
+                            <button class="color-swatch"        data-color="amber"  style="background:#92400e" title="Amber"></button>
+                        </div>
+                    </div>
+
+                    <div class="sb-group">
+                        <div class="sb-group-title">Font Family</div>
+                        <select class="sb-select" id="font-sel">
+                            <option value="Inter">Inter — Modern &amp; Clean</option>
+                            <option value="Outfit">Outfit — Geometric &amp; Fresh</option>
+                            <option value="Lora">Lora — Elegant &amp; Sophisticated</option>
+                            <option value="Playfair Display">Playfair Display — Executive</option>
+                        </select>
+                    </div>
+
+                    <div class="sb-group">
+                        <div class="sb-group-title">Font Size</div>
+                        <div class="size-row">
+                            <button class="size-btn" data-fs="small">Small</button>
+                            <button class="size-btn active" data-fs="medium">Medium</button>
+                            <button class="size-btn" data-fs="large">Large</button>
+                        </div>
+                    </div>
+
+                    <div class="sb-group">
+                        <div class="sb-group-title">Line Spacing &nbsp;<span class="spacing-val" id="spacing-val">1.5×</span></div>
+                        <input type="range" class="sb-range" id="spacing-range" min="1.1" max="2.2" step="0.1" value="1.5">
+                    </div>
+
                 </div>
-            </div>
-        </aside>
+            </aside>
 
-        <main class="workspace">
-            <div class="resume-wrapper">
-                <div class="resume-sheet" id="resume-document">
-                    <div id="drop-prompt" class="drop-prompt">
-                        <p>Drag sections here to start</p>
+            <main class="canvas-area" id="canvas-area">
+                <div class="canvas-scroll">
+                    <div class="resume-paper" id="resume-paper" data-template="modern">
+                        <div class="paper-empty" id="paper-empty">
+                            <div class="pe-title">Build Your Resume</div>
+                            <div class="pe-body">Drag sections from the left panel onto this canvas to get started</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </main>
+            </main>
+
+        </div>
     </div>
+
+    <div class="toast-rail" id="toast-rail"></div>
+
     <script src="script.js"></script>
 </body>
 </html>
